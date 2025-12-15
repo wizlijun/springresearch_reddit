@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reddit-custom-feed-fetcher"
+version = "0.1.0"
+description = "Reddit Custom Feed (Multi/Multireddit) Fetcher"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "requests>=2.31.0",
+    "PyYAML>=6.0.1",
+]
+
+[project.scripts]
+redditfeed = "src.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "mypy>=1.0",
+    "types-requests",
+    "types-PyYAML",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

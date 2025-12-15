@@ -1,0 +1,93 @@
+app:
+  name: reddit-custom-feed-fetcher
+  version: "0.1.0"
+
+reddit:
+  # Reddit 官方建议使用唯一且描述性的 User-Agent；默认 UA 可能会被严格限制。
+  user_agent: "linux:com.ones.redditfeedfetcher:v0.1.0 (by /u/YOUR_REDDIT_USERNAME)"
+
+  endpoints:
+    www_base: "https://www.reddit.com"
+    oauth_base: "https://oauth.reddit.com"
+
+  auth:
+    # 推荐使用 refresh_token 流程：运行时用 refresh_token 换 access_token（避免每次人工授权）
+    grant_type: "refresh_token"
+
+    client_id: "${REDDIT_CLIENT_ID}"
+    client_secret: "${REDDIT_CLIENT_SECRET}"
+    refresh_token: "${REDDIT_REFRESH_TOKEN}"
+
+    # 仅首次授权拿 refresh_token 时需要（运行抓取时不一定要用）
+    redirect_uri: "http://localhost:8006/reddit_callback"
+
+    # 最小权限：read（读取内容）；若需要读取用户 multi 列表等，可加 identity
+    scopes:
+      - "read"
+      - "identity"
+
+custom_feed:
+  # 本项目把 "custom feed" 按 multi（multireddit）处理
+  type: "multi"
+
+  # 你提供的 custom feed URL（用于解析&校验）
+  url: "https://www.reddit.com/user/bushacker/m/myreddit/"
+
+  # multipath：官方定义为 multireddit url path（末尾不带 /）
+  multipath: "/user/bushacker/m/myreddit"
+
+  owner: "bushacker"
+  name: "myreddit"
+
+fetch:
+  listing:
+    sort: "new"          # new/hot/top/rising
+    limit: 50            # <=100（listing limit 最大 100）
+    poll_interval_sec: 60
+
+    incremental:
+      strategy: "seen_fullnames"
+      max_seen_keep: 2000
+
+  per_post:
+    # 对每个新帖子逐个获取"内容"
+    # - detail: 帖子详情（建议补拉一次以稳妥）
+    # - comments: 评论树（可选）
+    fetch_post_detail: true
+    fetch_comments: true
+
+    comments:
+      # /comments/{article} 支持 depth/limit/sort/truncate 等参数
+      limit: 50
+      depth: 5
+      sort: "top"
+      truncate: 50
+
+rate_limit:
+  # Reddit Data API 免费访问建议每分钟 100 QPM，并监控 X-Ratelimit-* 响应头。
+  max_qpm: 100
+  respect_response_headers: true
+  safety_min_interval_ms: 700
+
+network:
+  timeout_sec: 30
+  retries: 3
+  backoff_sec: 1.0
+  proxy: ""   # e.g. "http://127.0.0.1:7890"
+
+storage:
+  data_dir: "./data"
+  state_file: "./data/state.json"
+
+  output:
+    format: "jsonl"          # jsonl/markdown
+    posts_dir: "./data/posts"
+
+  # 合规：建议支持删除已在 Reddit 删除的用户内容的清理任务（按开关执行）。
+  compliance:
+    purge_deleted_content: true
+    purge_interval_hours: 24
+
+logging:
+  level: "INFO"
+  file: "./logs/app.log"

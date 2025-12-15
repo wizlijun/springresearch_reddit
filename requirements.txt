@@ -1,0 +1,5 @@
+# Reddit Custom Feed Fetcher
+# Python 3.11+
+
+requests>=2.31.0
+PyYAML>=6.0.1
